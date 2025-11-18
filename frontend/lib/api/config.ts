@@ -1,0 +1,54 @@
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+export const API_ENDPOINTS = {
+  // Market
+  MARKET_INDICES: '/api/v1/market/indices',
+  MARKET_QUOTE: (ticker: string) => `/api/v1/market/quote/${ticker}`,
+  MARKET_CHART: (ticker: string) => `/api/v1/market/chart/${ticker}`,
+  MARKET_SEARCH: '/api/v1/market/search',
+
+  // Portfolio
+  PORTFOLIOS: '/api/v1/portfolio',
+  PORTFOLIO: (id: number) => `/api/v1/portfolio/${id}`,
+  PORTFOLIO_POSITIONS: (id: number) => `/api/v1/portfolio/${id}/positions`,
+  PORTFOLIO_PERFORMANCE: (id: number) => `/api/v1/portfolio/${id}/performance`,
+  POSITION: (id: number) => `/api/v1/portfolio/positions/${id}`,
+
+  // Watchlist
+  WATCHLIST: (id: number) => `/api/v1/watchlist/${id}`,
+  WATCHLIST_CREATE: '/api/v1/watchlist',
+  WATCHLIST_ADD_STOCK: (id: number) => `/api/v1/watchlist/${id}/stocks`,
+  WATCHLIST_REMOVE_STOCK: (stockId: number) => `/api/v1/watchlist/stocks/${stockId}`,
+
+  // Screener
+  SCREENER: '/api/v1/screener',
+
+  // Macro
+  MACRO_INDICATORS: '/api/v1/macro/indicators',
+  MACRO_INDICATOR: (name: string) => `/api/v1/macro/indicator/${name}`,
+  MACRO_YIELD_CURVE: '/api/v1/macro/yield-curve',
+} as const;
+
+export const QUERY_KEYS = {
+  // Market
+  MARKET_INDICES: ['market', 'indices'],
+  MARKET_QUOTE: (ticker: string) => ['market', 'quote', ticker],
+  MARKET_CHART: (ticker: string, interval: string) => ['market', 'chart', ticker, interval],
+
+  // Portfolio
+  PORTFOLIOS: ['portfolios'],
+  PORTFOLIO: (id: number) => ['portfolio', id],
+  PORTFOLIO_POSITIONS: (id: number) => ['portfolio', id, 'positions'],
+  PORTFOLIO_PERFORMANCE: (id: number) => ['portfolio', id, 'performance'],
+
+  // Watchlist
+  WATCHLIST: (id: number) => ['watchlist', id],
+
+  // Screener
+  SCREENER: (filters: any) => ['screener', filters],
+
+  // Macro
+  MACRO_INDICATORS: ['macro', 'indicators'],
+  MACRO_INDICATOR: (name: string) => ['macro', 'indicator', name],
+  MACRO_YIELD_CURVE: ['macro', 'yield-curve'],
+} as const;
