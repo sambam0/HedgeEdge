@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.base import Base, engine
-from app.api.v1 import market, portfolio, watchlist, macro, screener
+from app.api.v1 import market, portfolio, watchlist, macro, screener, news
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -27,6 +27,7 @@ app.include_router(portfolio.router, prefix=f"{settings.API_V1_PREFIX}/portfolio
 app.include_router(watchlist.router, prefix=f"{settings.API_V1_PREFIX}/watchlist", tags=["watchlist"])
 app.include_router(macro.router, prefix=f"{settings.API_V1_PREFIX}/macro", tags=["macro"])
 app.include_router(screener.router, prefix=f"{settings.API_V1_PREFIX}/screener", tags=["screener"])
+app.include_router(news.router, prefix=f"{settings.API_V1_PREFIX}/news", tags=["news"])
 
 
 @app.get("/")

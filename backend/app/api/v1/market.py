@@ -45,3 +45,48 @@ def search_stocks(q: str):
     if len(q) < 1:
         return []
     return market_service.search_stocks(q)
+
+
+@router.get("/intraday/{ticker}")
+def get_intraday_data(ticker: str, interval: str = "5min"):
+    """Get intraday price data for detailed charts"""
+    valid_intervals = ["1min", "5min", "15min", "30min", "60min"]
+    if interval not in valid_intervals:
+        raise HTTPException(status_code=400, detail=f"Invalid interval. Must be one of: {valid_intervals}")
+
+    data = market_service.get_intraday_data(ticker.upper(), interval)
+    return {
+        "ticker": ticker.upper(),
+        "interval": interval,
+        "data": data
+    }
+
+
+@router.get("/company/{ticker}")
+def get_company_overview(ticker: str):
+    """Get detailed company information and fundamentals"""
+    overview = market_service.get_company_overview(ticker.upper())
+    if not overview:
+        raise HTTPException(status_code=404, detail=f"Company information not found for {ticker}")
+    return overview
+
+
+@router.get("/technical/{ticker}")
+def get_technical_indicators(ticker: str, indicators: str = "SMA,RSI,MACD"):
+    """Get calculated technical indicators"""
+    indicator_list = [ind.strip() for ind in indicators.split(",")]
+    valid_indicators = ["SMA", "RSI", "MACD"]
+
+    # Validate indicators
+    for ind in indicator_list:
+        if ind not in valid_indicators:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid indicator '{ind}'. Must be one of: {valid_indicators}"
+            )
+
+    data = market_service.calculate_technical_indicators(ticker.upper(), indicator_list)
+    return {
+        "ticker": ticker.upper(),
+        "indicators": data
+    }
