@@ -27,6 +27,13 @@ export const API_ENDPOINTS = {
   MACRO_INDICATORS: '/api/v1/macro/indicators',
   MACRO_INDICATOR: (name: string) => `/api/v1/macro/indicator/${name}`,
   MACRO_YIELD_CURVE: '/api/v1/macro/yield-curve',
+
+  // Analysis
+  ANALYSIS_CORRELATION: '/api/v1/analysis/correlation',
+  ANALYSIS_PORTFOLIO_RISK: (portfolioId: number) => `/api/v1/analysis/portfolio/${portfolioId}/risk`,
+  ANALYSIS_PORTFOLIO_ATTRIBUTION: (portfolioId: number) => `/api/v1/analysis/portfolio/${portfolioId}/attribution`,
+  ANALYSIS_PORTFOLIO_BENCHMARK: (portfolioId: number) => `/api/v1/analysis/portfolio/${portfolioId}/benchmark`,
+  ANALYSIS_PORTFOLIO_DIVERSIFICATION: (portfolioId: number) => `/api/v1/analysis/portfolio/${portfolioId}/diversification`,
 } as const;
 
 export const QUERY_KEYS = {
@@ -51,4 +58,11 @@ export const QUERY_KEYS = {
   MACRO_INDICATORS: ['macro', 'indicators'],
   MACRO_INDICATOR: (name: string) => ['macro', 'indicator', name],
   MACRO_YIELD_CURVE: ['macro', 'yield-curve'],
+
+  // Analysis
+  ANALYSIS_CORRELATION: (tickers: string[], period: string) => ['analysis', 'correlation', tickers, period],
+  ANALYSIS_PORTFOLIO_RISK: (portfolioId: number) => ['analysis', 'portfolio', portfolioId, 'risk'],
+  ANALYSIS_PORTFOLIO_ATTRIBUTION: (portfolioId: number, period: string) => ['analysis', 'portfolio', portfolioId, 'attribution', period],
+  ANALYSIS_PORTFOLIO_BENCHMARK: (portfolioId: number, benchmark: string, period: string) => ['analysis', 'portfolio', portfolioId, 'benchmark', benchmark, period],
+  ANALYSIS_PORTFOLIO_DIVERSIFICATION: (portfolioId: number) => ['analysis', 'portfolio', portfolioId, 'diversification'],
 } as const;
