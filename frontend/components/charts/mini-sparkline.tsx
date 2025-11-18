@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { mockSparklineData } from '@/lib/mock-data';
 
@@ -10,10 +11,13 @@ interface MiniSparklineProps {
 }
 
 export function MiniSparkline({ data, positive = true, height = 48 }: MiniSparklineProps) {
-  const sparklineData = (data || mockSparklineData).map((value, index) => ({
-    index,
-    value,
-  }));
+  // Memoize data transformation
+  const sparklineData = useMemo(() => {
+    return (data || mockSparklineData).map((value, index) => ({
+      index,
+      value,
+    }));
+  }, [data]);
 
   const color = positive ? '#16a34a' : '#dc2626';
 

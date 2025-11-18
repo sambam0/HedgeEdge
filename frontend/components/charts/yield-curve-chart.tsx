@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   LineChart,
   Line,
@@ -19,10 +20,12 @@ interface YieldCurveChartProps {
 export function YieldCurveChart({ data, height = 300 }: YieldCurveChartProps) {
   const chartData = data || mockYieldCurve;
 
-  // Check if inverted (2Y > 10Y)
-  const twoYear = chartData.find(d => d.maturity === '2Y')?.yield || 0;
-  const tenYear = chartData.find(d => d.maturity === '10Y')?.yield || 0;
-  const isInverted = twoYear > tenYear;
+  // Memoize inversion calculation
+  const isInverted = useMemo(() => {
+    const twoYear = chartData.find(d => d.maturity === '2Y')?.yield || 0;
+    const tenYear = chartData.find(d => d.maturity === '10Y')?.yield || 0;
+    return twoYear > tenYear;
+  }, [chartData]);
 
   return (
     <div className="space-y-2">

@@ -51,3 +51,15 @@ export const mockHeatMapData = [
   { sector: 'Real Estate', performance: 0.8 },
   { sector: 'Utilities', performance: 0.2 },
 ];
+
+export const mockCorrelationMatrix = {
+  assets: ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'SPY'],
+  data: [
+    { asset: 'AAPL', AAPL: 1.00, MSFT: 0.85, GOOGL: 0.78, AMZN: 0.72, TSLA: 0.45, SPY: 0.82 },
+    { asset: 'MSFT', AAPL: 0.85, MSFT: 1.00, GOOGL: 0.88, AMZN: 0.75, TSLA: 0.42, SPY: 0.86 },
+    { asset: 'GOOGL', AAPL: 0.78, MSFT: 0.88, GOOGL: 1.00, AMZN: 0.80, TSLA: 0.48, SPY: 0.84 },
+    { asset: 'AMZN', AAPL: 0.72, MSFT: 0.75, GOOGL: 0.80, AMZN: 1.00, TSLA: 0.52, SPY: 0.79 },
+    { asset: 'TSLA', AAPL: 0.45, MSFT: 0.42, GOOGL: 0.48, AMZN: 0.52, TSLA: 1.00, SPY: 0.55 },
+    { asset: 'SPY', AAPL: 0.82, MSFT: 0.86, GOOGL: 0.84, AMZN: 0.79, TSLA: 0.55, SPY: 1.00 },
+  ],
+};
