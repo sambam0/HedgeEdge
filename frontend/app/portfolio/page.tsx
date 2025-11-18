@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/app-layout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -18,6 +19,17 @@ export default function PortfolioPage() {
       return res.json();
     },
   });
+
+  // Memoize expensive calculations
+  const sortedPositions = useMemo(() => {
+    if (!portfolioData?.positions) return [];
+    return [...portfolioData.positions].sort((a, b) => b.current_value - a.current_value);
+  }, [portfolioData?.positions]);
+
+  const largestPositionPercent = useMemo(() => {
+    if (!sortedPositions.length || !portfolioData?.total_value) return 0;
+    return (sortedPositions[0].current_value / portfolioData.total_value) * 100;
+  }, [sortedPositions, portfolioData?.total_value]);
 
   if (isLoading) {
     return (
@@ -79,36 +91,37 @@ export default function PortfolioPage() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200 dark:border-neutral-800">
-                        <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  <table className="w-full" role="table" aria-label="Portfolio positions">
+                    <thead role="rowgroup">
+                      <tr role="row" className="border-b border-gray-200 dark:border-neutral-800">
+                        <th role="columnheader" className="text-left py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           Ticker
                         </th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        <th role="columnheader" className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           Shares
                         </th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        <th role="columnheader" className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           Avg Cost
                         </th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        <th role="columnheader" className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           Current Price
                         </th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        <th role="columnheader" className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           Current Value
                         </th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        <th role="columnheader" className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           Gain/Loss
                         </th>
-                        <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        <th role="columnheader" className="text-right py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                           Daily Change
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-neutral-800">
-                      {portfolioData.positions.map((position: any) => (
+                    <tbody role="rowgroup" className="divide-y divide-gray-200 dark:divide-neutral-800">
+                      {sortedPositions.map((position: any) => (
                         <tr
                           key={position.id}
+                          role="row"
                           className="hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors"
                         >
                           <td className="py-4 px-4">
@@ -187,10 +200,10 @@ export default function PortfolioPage() {
                       Largest Position
                     </div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {((portfolioData.positions[0]?.current_value / portfolioData.total_value) * 100).toFixed(1)}%
+                      {largestPositionPercent.toFixed(1)}%
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      {portfolioData.positions[0]?.ticker}
+                      {sortedPositions[0]?.ticker}
                     </div>
                   </div>
                   <div className="p-4 bg-gray-50 dark:bg-neutral-800/50 rounded-lg">
