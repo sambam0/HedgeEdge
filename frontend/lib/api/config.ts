@@ -6,6 +6,10 @@ export const API_ENDPOINTS = {
   MARKET_QUOTE: (ticker: string) => `/api/v1/market/quote/${ticker}`,
   MARKET_CHART: (ticker: string) => `/api/v1/market/chart/${ticker}`,
   MARKET_SEARCH: '/api/v1/market/search',
+  MARKET_INTRADAY: (ticker: string) => `/api/v1/market/intraday/${ticker}`,
+  MARKET_COMPANY: (ticker: string) => `/api/v1/market/company/${ticker}`,
+  MARKET_TECHNICAL: (ticker: string) => `/api/v1/market/technical/${ticker}`,
+  MARKET_MOVERS: '/api/v1/market/movers',
 
   // Portfolio
   PORTFOLIOS: '/api/v1/portfolio',
@@ -34,6 +38,10 @@ export const QUERY_KEYS = {
   MARKET_INDICES: ['market', 'indices'],
   MARKET_QUOTE: (ticker: string) => ['market', 'quote', ticker],
   MARKET_CHART: (ticker: string, interval: string) => ['market', 'chart', ticker, interval],
+  MARKET_INTRADAY: (ticker: string, interval: string) => ['market', 'intraday', ticker, interval],
+  MARKET_COMPANY: (ticker: string) => ['market', 'company', ticker],
+  MARKET_TECHNICAL: (ticker: string, indicators: string[]) => ['market', 'technical', ticker, ...indicators],
+  MARKET_MOVERS: ['market', 'movers'],
 
   // Portfolio
   PORTFOLIOS: ['portfolios'],
