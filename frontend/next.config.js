@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
+
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    turbo: {
+      root: path.resolve(__dirname),
+    },
+  },
   async rewrites() {
     return [
       {
