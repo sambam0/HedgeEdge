@@ -25,11 +25,11 @@ export function formatLargeNumber(value: number): string {
   const sign = value < 0 ? '-' : '';
 
   if (absValue >= 1e9) {
-    return `${sign}$${(value / 1e9).toFixed(2)}B`;
+    return `${sign}$${(absValue / 1e9).toFixed(2)}B`;
   } else if (absValue >= 1e6) {
-    return `${sign}$${(value / 1e6).toFixed(2)}M`;
+    return `${sign}$${(absValue / 1e6).toFixed(2)}M`;
   } else if (absValue >= 1e3) {
-    return `${sign}$${(value / 1e3).toFixed(2)}K`;
+    return `${sign}$${(absValue / 1e3).toFixed(2)}K`;
   }
 
   return formatCurrency(value);
@@ -53,11 +53,11 @@ export function formatNumber(value: number, compact: boolean = false): string {
     const sign = value < 0 ? '-' : '';
 
     if (absValue >= 1e9) {
-      return `${sign}${(value / 1e9).toFixed(2)}B`;
+      return `${sign}${(absValue / 1e9).toFixed(2)}B`;
     } else if (absValue >= 1e6) {
-      return `${sign}${(value / 1e6).toFixed(2)}M`;
+      return `${sign}${(absValue / 1e6).toFixed(2)}M`;
     } else if (absValue >= 1e3) {
-      return `${sign}${(value / 1e3).toFixed(2)}K`;
+      return `${sign}${(absValue / 1e3).toFixed(2)}K`;
     }
   }
 

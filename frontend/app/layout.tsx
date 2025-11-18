@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ThemeScript } from "./theme-script";
+import { LiveAnnouncer } from "@/components/ui/live-announcer";
 
 export const metadata: Metadata = {
   title: "Principle - Trading Terminal",
@@ -19,7 +20,10 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className="font-sans">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <LiveAnnouncer />
+        </Providers>
       </body>
     </html>
   );
