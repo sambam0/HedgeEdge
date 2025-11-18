@@ -53,6 +53,7 @@ class PortfolioSnapshot(Base):
     snapshot_date = Column(Date, nullable=False)
     total_value = Column(Numeric(15, 2), nullable=False)
     daily_return = Column(Numeric(10, 4))
+    sp500_return = Column(Numeric(10, 4))
     created_at = Column(DateTime, default=datetime.utcnow)
 
     portfolio = relationship("Portfolio", back_populates="snapshots")

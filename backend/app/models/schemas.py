@@ -16,10 +16,19 @@ class PositionCreate(PositionBase):
     pass
 
 
+class PositionUpdate(BaseModel):
+    shares: Optional[float] = None
+    cost_basis: Optional[float] = None
+
+
 class Position(PositionBase):
     id: int
     portfolio_id: int
     created_at: datetime
+    current_price: Optional[float] = None
+    current_value: Optional[float] = None
+    profit_loss: Optional[float] = None
+    profit_loss_percent: Optional[float] = None
 
     class Config:
         from_attributes = True
@@ -77,6 +86,9 @@ class WatchlistStock(WatchlistStockBase):
     id: int
     watchlist_id: int
     added_at: datetime
+    current_price: Optional[float] = None
+    change: Optional[float] = None
+    change_percent: Optional[float] = None
 
     class Config:
         from_attributes = True
@@ -114,6 +126,14 @@ class Quote(BaseModel):
     previous_close: Optional[float] = None
 
 
+class MarketIndex(BaseModel):
+    symbol: str
+    name: str
+    price: float
+    change: float
+    change_percent: float
+
+
 class IndexData(BaseModel):
     symbol: str
     name: str
@@ -140,6 +160,8 @@ class PortfolioPerformance(BaseModel):
     daily_change: float
     daily_change_percent: float
     positions_count: int
+    sp500_return: Optional[float] = None
+    vs_sp500: Optional[float] = None
 
 
 class PositionWithLiveData(BaseModel):
@@ -157,6 +179,16 @@ class PositionWithLiveData(BaseModel):
 
 
 # Screener Schemas
+class StockScreenerFilters(BaseModel):
+    min_market_cap: Optional[float] = None
+    max_market_cap: Optional[float] = None
+    min_pe: Optional[float] = None
+    max_pe: Optional[float] = None
+    min_price: Optional[float] = None
+    max_price: Optional[float] = None
+    sector: Optional[str] = None
+
+
 class ScreenerFilters(BaseModel):
     min_market_cap: Optional[float] = None
     max_market_cap: Optional[float] = None
@@ -174,4 +206,18 @@ class ScreenerResult(BaseModel):
     change_percent: float
     market_cap: Optional[int] = None
     pe_ratio: Optional[float] = None
+    volume: int = 0
     sector: Optional[str] = None
+
+
+# Macro Schemas
+class EconomicIndicatorData(BaseModel):
+    indicator_name: str
+    value: float
+    date: date
+
+
+class YieldCurveData(BaseModel):
+    maturity: str
+    yield_value: float
+    date: date
