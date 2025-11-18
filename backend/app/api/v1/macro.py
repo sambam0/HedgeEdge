@@ -1,40 +1,39 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from typing import Dict, List
 from app.services.macro_service import macro_service
 
 router = APIRouter()
 
 
 @router.get("/indicators")
-def get_all_indicators():
-    """Get all macro indicators"""
-    return macro_service.get_all_indicators()
+def get_economic_indicators() -> Dict:
+    """Get current economic indicators"""
+    try:
+        indicators = macro_service.get_economic_indicators()
+        return indicators
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/fed-funds-rate")
-def get_fed_funds_rate():
-    """Get Federal Funds Rate"""
-    return macro_service.get_fed_funds_rate()
-
-
-@router.get("/inflation")
-def get_inflation():
-    """Get inflation data (CPI and PCE)"""
-    return macro_service.get_inflation_data()
-
-
-@router.get("/unemployment")
-def get_unemployment():
-    """Get unemployment rate"""
-    return macro_service.get_unemployment_rate()
-
-
-@router.get("/gdp")
-def get_gdp():
-    """Get GDP growth rate"""
-    return macro_service.get_gdp_growth()
-
-
-@router.get("/treasury-yields")
-def get_treasury_yields():
+@router.get("/yield-curve")
+def get_yield_curve() -> Dict:
     """Get treasury yield curve"""
-    return macro_service.get_treasury_yields()
+    try:
+        curve = macro_service.get_yield_curve()
+        return curve
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/history/{indicator}")
+def get_indicator_history(indicator: str, periods: int = 12) -> List[Dict]:
+    """Get historical data for an economic indicator"""
+    try:
+        history = macro_service.get_indicator_history(indicator, periods)
+        if not history:
+            raise HTTPException(status_code=404, detail=f"Indicator {indicator} not found")
+        return history
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
