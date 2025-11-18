@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -221,3 +221,28 @@ class YieldCurveData(BaseModel):
     maturity: str
     yield_value: float
     date: date
+
+
+# News Schemas
+class NewsArticle(BaseModel):
+    title: str
+    description: Optional[str] = None
+    url: str
+    source: Optional[str] = None
+    published_at: str
+    image_url: Optional[str] = None
+    author: Optional[str] = None
+    sentiment: str  # "positive", "neutral", or "negative"
+    tickers: List[str] = []
+
+
+class NewsPagination(BaseModel):
+    articles: List[NewsArticle]
+    total_results: int
+    page: int
+
+
+class MarketSentiment(BaseModel):
+    score: float  # 0-100
+    distribution: Dict[str, int]  # {positive: x, neutral: y, negative: z}
+    total_articles: int
