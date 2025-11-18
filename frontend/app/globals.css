@@ -6,11 +6,19 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
+    --chart-grid: #e5e7eb;
+    --chart-text: #6b7280;
+    --chart-tooltip-bg: #ffffff;
+    --chart-tooltip-border: #e5e7eb;
   }
 
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
+    --chart-grid: #374151;
+    --chart-text: #9ca3af;
+    --chart-tooltip-bg: #1f2937;
+    --chart-tooltip-border: #374151;
   }
 }
 
