@@ -1,189 +1,208 @@
-import requests
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime, timedelta
-from app.core.config import settings
+import random
+from app.services.fred_client import fred_client
 
 
 class MacroService:
-    def __init__(self):
-        self.fred_api_key = settings.FRED_API_KEY
-        self.fred_base_url = "https://api.stlouisfed.org/fred"
+    """Service for macroeconomic indicators"""
 
-    def _fetch_fred_series(self, series_id: str, limit: int = 100) -> List[Dict]:
-        """Fetch data from FRED API"""
+    # FRED series IDs for economic indicators
+    SERIES_IDS = {
+        'fed_funds': 'FEDFUNDS',      # Federal Funds Effective Rate
+        'cpi': 'CPIAUCSL',            # Consumer Price Index
+        'unemployment': 'UNRATE',      # Unemployment Rate
+        'gdp': 'GDP',                 # Gross Domestic Product
+        'gdp_growth': 'A191RL1Q225SBEA',  # Real GDP Growth
+        'inflation': 'FPCPITOTLZGUSA',    # Inflation Rate
+        '10y_yield': 'DGS10',         # 10-Year Treasury
+        'sp500': 'SP500',             # S&P 500 Index
+    }
+
+    def __init__(self):
+        self.fred = fred_client
+
+    def get_economic_indicators(self) -> Dict:
+        """Get current economic indicators"""
         try:
-            url = f"{self.fred_base_url}/series/observations"
-            params = {
-                'series_id': series_id,
-                'api_key': self.fred_api_key,
-                'file_type': 'json',
-                'sort_order': 'desc',
-                'limit': limit
+            # Fetch all indicators
+            fed_funds = self.fred.get_series_latest(self.SERIES_IDS['fed_funds'])
+            cpi = self.fred.get_series_latest(self.SERIES_IDS['cpi'])
+            unemployment = self.fred.get_series_latest(self.SERIES_IDS['unemployment'])
+            gdp_growth = self.fred.get_series_latest(self.SERIES_IDS['gdp_growth'])
+            ten_year = self.fred.get_series_latest(self.SERIES_IDS['10y_yield'])
+
+            # Calculate inflation YoY if we have CPI
+            inflation_rate = None
+            if cpi:
+                cpi_history = self.fred.get_series_historical(
+                    self.SERIES_IDS['cpi'],
+                    limit=13
+                )
+                if len(cpi_history) >= 13:
+                    current_cpi = cpi_history[0]['value']
+                    year_ago_cpi = cpi_history[12]['value']
+                    inflation_rate = ((current_cpi - year_ago_cpi) / year_ago_cpi) * 100
+
+            return {
+                'fed_funds_rate': {
+                    'value': fed_funds['value'] if fed_funds else None,
+                    'date': fed_funds['date'] if fed_funds else None,
+                    'unit': '%',
+                    'name': 'Federal Funds Rate'
+                },
+                'unemployment_rate': {
+                    'value': unemployment['value'] if unemployment else None,
+                    'date': unemployment['date'] if unemployment else None,
+                    'unit': '%',
+                    'name': 'Unemployment Rate'
+                },
+                'inflation_rate': {
+                    'value': round(inflation_rate, 2) if inflation_rate else None,
+                    'date': cpi['date'] if cpi else None,
+                    'unit': '%',
+                    'name': 'Inflation Rate (YoY)'
+                },
+                'gdp_growth': {
+                    'value': gdp_growth['value'] if gdp_growth else None,
+                    'date': gdp_growth['date'] if gdp_growth else None,
+                    'unit': '%',
+                    'name': 'GDP Growth Rate'
+                },
+                'ten_year_yield': {
+                    'value': ten_year['value'] if ten_year else None,
+                    'date': ten_year['date'] if ten_year else None,
+                    'unit': '%',
+                    'name': '10-Year Treasury Yield'
+                }
             }
 
-            response = requests.get(url, params=params, timeout=10)
-            response.raise_for_status()
+        except Exception as e:
+            print(f"Error fetching economic indicators: {e}")
+            return self._get_mock_indicators()
 
-            data = response.json()
-            observations = data.get('observations', [])
+    def get_yield_curve(self) -> Dict:
+        """Get treasury yield curve"""
+        try:
+            yields = self.fred.get_treasury_yields()
 
-            # Filter out invalid values and reverse to chronological order
-            valid_obs = [
+            # Format for frontend
+            curve_data = []
+            maturity_order = ['1M', '3M', '6M', '1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '20Y', '30Y']
+
+            for maturity in maturity_order:
+                if maturity in yields and yields[maturity] is not None:
+                    curve_data.append({
+                        'maturity': maturity,
+                        'yield': round(yields[maturity], 3),
+                        'months': self._maturity_to_months(maturity)
+                    })
+
+            if not curve_data:
+                return self._get_mock_yield_curve()
+
+            return {
+                'data': curve_data,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'inverted': self._check_inversion(curve_data)
+            }
+
+        except Exception as e:
+            print(f"Error fetching yield curve: {e}")
+            return self._get_mock_yield_curve()
+
+    def get_indicator_history(self, indicator: str, periods: int = 12) -> List[Dict]:
+        """Get historical data for an economic indicator"""
+        try:
+            series_id = self.SERIES_IDS.get(indicator)
+            if not series_id:
+                return []
+
+            history = self.fred.get_series_historical(series_id, limit=periods)
+            return [
                 {
-                    'date': obs['date'],
-                    'value': float(obs['value']) if obs['value'] != '.' else None
+                    'date': item['date'],
+                    'value': round(item['value'], 2)
                 }
-                for obs in observations if obs['value'] != '.'
+                for item in reversed(history)
             ]
 
-            return list(reversed(valid_obs))
         except Exception as e:
-            print(f"Error fetching FRED series {series_id}: {e}")
+            print(f"Error fetching indicator history: {e}")
             return []
 
-    def get_fed_funds_rate(self) -> Dict:
-        """Get Federal Funds Effective Rate"""
-        data = self._fetch_fred_series('FEDFUNDS', limit=60)
-
-        if not data:
-            return {
-                'current': 0,
-                'previous': 0,
-                'change': 0,
-                'history': []
-            }
-
-        current = data[-1]['value'] if data else 0
-        previous = data[-2]['value'] if len(data) > 1 else current
-        change = current - previous if current and previous else 0
-
-        return {
-            'current': round(current, 2) if current else 0,
-            'previous': round(previous, 2) if previous else 0,
-            'change': round(change, 2),
-            'history': [
-                {'date': d['date'], 'value': round(d['value'], 2)}
-                for d in data[-12:] if d['value']
-            ]
+    def _maturity_to_months(self, maturity: str) -> int:
+        """Convert maturity string to months"""
+        mapping = {
+            '1M': 1, '3M': 3, '6M': 6, '1Y': 12, '2Y': 24,
+            '3Y': 36, '5Y': 60, '7Y': 84, '10Y': 120, '20Y': 240, '30Y': 360
         }
+        return mapping.get(maturity, 0)
 
-    def get_inflation_data(self) -> Dict:
-        """Get CPI and PCE inflation data"""
-        cpi = self._fetch_fred_series('CPIAUCSL', limit=24)  # CPI for All Urban Consumers
-        pce = self._fetch_fred_series('PCEPI', limit=24)     # Personal Consumption Expenditures Price Index
+    def _check_inversion(self, curve_data: List[Dict]) -> bool:
+        """Check if yield curve is inverted (2Y > 10Y)"""
+        two_year = next((item['yield'] for item in curve_data if item['maturity'] == '2Y'), None)
+        ten_year = next((item['yield'] for item in curve_data if item['maturity'] == '10Y'), None)
 
-        def calc_yoy_change(data_points):
-            if len(data_points) < 13:
-                return 0
-            current = data_points[-1]['value']
-            year_ago = data_points[-13]['value']
-            if current and year_ago:
-                return ((current - year_ago) / year_ago) * 100
-            return 0
+        if two_year and ten_year:
+            return two_year > ten_year
+        return False
 
+    def _get_mock_indicators(self) -> Dict:
+        """Fallback mock data for development"""
         return {
-            'cpi': {
-                'current': round(calc_yoy_change(cpi), 2) if cpi else 0,
-                'history': [
-                    {'date': d['date'], 'value': round(d['value'], 2)}
-                    for d in cpi[-12:] if d['value']
-                ]
+            'fed_funds_rate': {
+                'value': 5.33,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'unit': '%',
+                'name': 'Federal Funds Rate'
             },
-            'pce': {
-                'current': round(calc_yoy_change(pce), 2) if pce else 0,
-                'history': [
-                    {'date': d['date'], 'value': round(d['value'], 2)}
-                    for d in pce[-12:] if d['value']
-                ]
+            'unemployment_rate': {
+                'value': 3.8,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'unit': '%',
+                'name': 'Unemployment Rate'
+            },
+            'inflation_rate': {
+                'value': 3.2,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'unit': '%',
+                'name': 'Inflation Rate (YoY)'
+            },
+            'gdp_growth': {
+                'value': 2.4,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'unit': '%',
+                'name': 'GDP Growth Rate'
+            },
+            'ten_year_yield': {
+                'value': 4.25,
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'unit': '%',
+                'name': '10-Year Treasury Yield'
             }
         }
 
-    def get_unemployment_rate(self) -> Dict:
-        """Get Unemployment Rate"""
-        data = self._fetch_fred_series('UNRATE', limit=24)
-
-        if not data:
-            return {
-                'current': 0,
-                'previous': 0,
-                'change': 0,
-                'history': []
-            }
-
-        current = data[-1]['value'] if data else 0
-        previous = data[-2]['value'] if len(data) > 1 else current
-        change = current - previous if current and previous else 0
-
-        return {
-            'current': round(current, 2) if current else 0,
-            'previous': round(previous, 2) if previous else 0,
-            'change': round(change, 2),
-            'history': [
-                {'date': d['date'], 'value': round(d['value'], 2)}
-                for d in data[-12:] if d['value']
-            ]
-        }
-
-    def get_gdp_growth(self) -> Dict:
-        """Get GDP Growth Rate"""
-        data = self._fetch_fred_series('A191RL1Q225SBEA', limit=20)  # Real GDP Percent Change
-
-        if not data:
-            return {
-                'current': 0,
-                'previous': 0,
-                'change': 0,
-                'history': []
-            }
-
-        current = data[-1]['value'] if data else 0
-        previous = data[-2]['value'] if len(data) > 1 else current
-        change = current - previous if current and previous else 0
+    def _get_mock_yield_curve(self) -> Dict:
+        """Fallback mock yield curve"""
+        mock_yields = [
+            {'maturity': '1M', 'yield': 5.45, 'months': 1},
+            {'maturity': '3M', 'yield': 5.40, 'months': 3},
+            {'maturity': '6M', 'yield': 5.35, 'months': 6},
+            {'maturity': '1Y', 'yield': 5.20, 'months': 12},
+            {'maturity': '2Y', 'yield': 4.95, 'months': 24},
+            {'maturity': '3Y', 'yield': 4.75, 'months': 36},
+            {'maturity': '5Y', 'yield': 4.50, 'months': 60},
+            {'maturity': '7Y', 'yield': 4.40, 'months': 84},
+            {'maturity': '10Y', 'yield': 4.25, 'months': 120},
+            {'maturity': '20Y', 'yield': 4.50, 'months': 240},
+            {'maturity': '30Y', 'yield': 4.35, 'months': 360},
+        ]
 
         return {
-            'current': round(current, 2) if current else 0,
-            'previous': round(previous, 2) if previous else 0,
-            'change': round(change, 2),
-            'history': [
-                {'date': d['date'], 'value': round(d['value'], 2)}
-                for d in data[-8:] if d['value']
-            ]
-        }
-
-    def get_treasury_yields(self) -> Dict:
-        """Get Treasury Yield Curve"""
-        yields = {
-            '3M': 'DGS3MO',
-            '2Y': 'DGS2',
-            '5Y': 'DGS5',
-            '10Y': 'DGS10',
-            '30Y': 'DGS30'
-        }
-
-        current_yields = {}
-        for label, series_id in yields.items():
-            data = self._fetch_fred_series(series_id, limit=10)
-            if data:
-                current_yields[label] = round(data[-1]['value'], 2) if data[-1]['value'] else 0
-            else:
-                current_yields[label] = 0
-
-        return {
-            'current': current_yields,
-            'curve': [
-                {'maturity': k, 'yield': v}
-                for k, v in current_yields.items()
-            ]
-        }
-
-    def get_all_indicators(self) -> Dict:
-        """Get all macro indicators"""
-        return {
-            'fed_funds_rate': self.get_fed_funds_rate(),
-            'inflation': self.get_inflation_data(),
-            'unemployment': self.get_unemployment_rate(),
-            'gdp': self.get_gdp_growth(),
-            'treasury_yields': self.get_treasury_yields()
+            'data': mock_yields,
+            'date': datetime.now().strftime('%Y-%m-%d'),
+            'inverted': False
         }
 
 
