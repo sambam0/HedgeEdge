@@ -46,3 +46,40 @@ export function useStockSearch(query: string) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
+
+export function useIntradayData(ticker: string, interval: string = '5min') {
+  return useQuery({
+    queryKey: QUERY_KEYS.MARKET_INTRADAY(ticker, interval),
+    queryFn: () => marketAPI.getIntradayData(ticker, interval),
+    refetchInterval: 15 * 1000, // Refetch every 15 seconds
+    enabled: !!ticker,
+    staleTime: 10 * 1000, // 10 seconds
+  });
+}
+
+export function useCompanyOverview(ticker: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.MARKET_COMPANY(ticker),
+    queryFn: () => marketAPI.getCompanyOverview(ticker),
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours (company info doesn't change often)
+    enabled: !!ticker,
+  });
+}
+
+export function useTechnicalIndicators(ticker: string, indicators: string[] = ['SMA', 'RSI']) {
+  return useQuery({
+    queryKey: QUERY_KEYS.MARKET_TECHNICAL(ticker, indicators),
+    queryFn: () => marketAPI.getTechnicalIndicators(ticker, indicators),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!ticker && indicators.length > 0,
+  });
+}
+
+export function useMarketMovers() {
+  return useQuery({
+    queryKey: QUERY_KEYS.MARKET_MOVERS,
+    queryFn: marketAPI.getMovers,
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds
+    staleTime: 15 * 1000, // 15 seconds
+  });
+}
