@@ -15,15 +15,15 @@ describe('Sidebar', () => {
   });
 
   it('mobile drawer is not rendered when isOpen is false', () => {
-    render(<Sidebar isOpen={false} onClose={() => {}} />);
+    const { container } = render(<Sidebar isOpen={false} onClose={() => {}} />);
     // Only one aside when closed
-    expect(document.querySelectorAll('aside').length).toBe(1);
+    expect(container.querySelectorAll('aside').length).toBe(1);
   });
 
   it('mobile drawer renders when isOpen is true', () => {
-    render(<Sidebar isOpen={true} onClose={() => {}} />);
+    const { container } = render(<Sidebar isOpen={true} onClose={() => {}} />);
     // Two asides: desktop + mobile drawer
-    expect(document.querySelectorAll('aside').length).toBe(2);
+    expect(container.querySelectorAll('aside').length).toBe(2);
   });
 
   it('clicking the overlay calls onClose', () => {

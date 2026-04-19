@@ -32,6 +32,7 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
         {/* Left: hamburger (mobile) + logo (mobile) */}
         <div className="flex items-center gap-3 lg:hidden">
           <button
+            type="button"
             onClick={onMenuToggle}
             className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
             aria-label="Open navigation menu"
@@ -44,6 +45,7 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
         {/* Right: theme toggle */}
         <div className="ml-auto flex items-center gap-4">
           <button
+            type="button"
             onClick={toggleTheme}
             className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
             aria-label="Toggle theme"
