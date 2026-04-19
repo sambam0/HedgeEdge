@@ -9,6 +9,13 @@ import { MiniSparkline } from '@/components/charts/mini-sparkline';
 import { Wallet } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
+interface Position {
+  ticker: string;
+  current_value: number;
+  gain_loss: number;
+  gain_loss_percent: number;
+}
+
 export default function Home() {
   const { data: indicesData } = useQuery({
     queryKey: ['indices'],
@@ -26,7 +33,7 @@ export default function Home() {
     },
   });
 
-  const topPositions = portfolioData?.positions?.slice(0, 4) ?? [];
+  const topPositions: Position[] = portfolioData?.positions?.slice(0, 4) ?? [];
 
   return (
     <AppLayout>
@@ -53,7 +60,7 @@ export default function Home() {
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Top Positions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {topPositions.map((pos: any) => (
+              {topPositions.map((pos) => (
                 <Card key={pos.ticker}>
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">

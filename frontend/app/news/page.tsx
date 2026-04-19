@@ -4,10 +4,8 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppLayout } from '@/components/layout/app-layout';
-import { NewsFeed } from '@/components/news/news-feed';
+import { NewsFeed, type SentimentFilter } from '@/components/news/news-feed';
 import { SentimentGauge } from '@/components/news/sentiment-gauge';
-
-type SentimentFilter = 'all' | 'positive' | 'neutral' | 'negative';
 
 const filterButtons: { value: SentimentFilter; label: string; activeClass: string }[] = [
   { value: 'all', label: 'All', activeClass: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' },
