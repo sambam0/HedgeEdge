@@ -101,7 +101,7 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-gray-50 dark:bg-neutral-800 border-b border-gray-200 dark:border-neutral-700">
+        <thead className="bg-gray-50 dark:bg-neutral-800 border-b border-gray-200 dark:border-neutral-700 sticky top-0 z-10">
           <tr>
             {columns.map((column, index) => (
               <th
@@ -128,10 +128,8 @@ export function DataTable<T extends Record<string, any>>({
           {sortedData.map((row, rowIndex) => (
             <tr
               key={keyExtractor(row, rowIndex)}
-              className={`${
-                onRowClick
-                  ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors'
-                  : ''
+              className={`hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors ${
+                onRowClick ? 'cursor-pointer' : ''
               }`}
               onClick={() => onRowClick?.(row)}
             >
