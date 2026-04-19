@@ -2,13 +2,24 @@
 
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { AppLayout } from '@/components/layout/app-layout';
 import { NewsFeed } from '@/components/news/news-feed';
 import { SentimentGauge } from '@/components/news/sentiment-gauge';
 
+type SentimentFilter = 'all' | 'positive' | 'neutral' | 'negative';
+
+const filterButtons: { value: SentimentFilter; label: string; activeClass: string }[] = [
+  { value: 'all', label: 'All', activeClass: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' },
+  { value: 'positive', label: 'Positive', activeClass: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+  { value: 'neutral', label: 'Neutral', activeClass: 'bg-gray-200 text-gray-700 dark:bg-neutral-700 dark:text-gray-300' },
+  { value: 'negative', label: 'Negative', activeClass: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+];
+
 export default function NewsPage() {
   const [searchQuery, setSearchQuery] = useState('stock market');
   const [inputValue, setInputValue] = useState('stock market');
+  const [sentimentFilter, setSentimentFilter] = useState<SentimentFilter>('all');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +54,31 @@ export default function NewsPage() {
           </div>
         </form>
 
-        <NewsFeed query={searchQuery} onTickerClick={handleTickerClick} />
+        {/* Sentiment filter bar */}
+        <div className="flex items-center gap-2 bg-white dark:bg-neutral-900 rounded-lg px-4 py-3">
+          <span className="text-sm text-gray-500 dark:text-gray-400 font-medium mr-1">Filter:</span>
+          {filterButtons.map(({ value, label, activeClass }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setSentimentFilter(value)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs font-medium transition-colors capitalize',
+                sentimentFilter === value
+                  ? activeClass
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800'
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <NewsFeed
+          query={searchQuery}
+          onTickerClick={handleTickerClick}
+          sentimentFilter={sentimentFilter}
+        />
       </div>
     </AppLayout>
   );

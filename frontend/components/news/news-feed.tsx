@@ -4,23 +4,19 @@ import { useEffect, useRef } from 'react';
 import { useNewsSearch } from '@/lib/hooks/useNews';
 import { NewsCard } from './news-card';
 
+type SentimentFilter = 'all' | 'positive' | 'neutral' | 'negative';
+
 interface NewsFeedProps {
   query: string;
   onTickerClick?: (ticker: string) => void;
+  sentimentFilter?: SentimentFilter;
 }
 
-export function NewsFeed({ query, onTickerClick }: NewsFeedProps) {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useNewsSearch(query);
+export function NewsFeed({ query, onTickerClick, sentimentFilter = 'all' }: NewsFeedProps) {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useNewsSearch(query);
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Infinite scroll observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -30,11 +26,7 @@ export function NewsFeed({ query, onTickerClick }: NewsFeedProps) {
       },
       { threshold: 1.0 }
     );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
+    if (observerTarget.current) observer.observe(observerTarget.current);
     return () => observer.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
@@ -52,12 +44,19 @@ export function NewsFeed({ query, onTickerClick }: NewsFeedProps) {
     );
   }
 
-  const articles = data?.pages.flatMap((page) => page.articles) || [];
+  const allArticles = data?.pages.flatMap((page) => page.articles) ?? [];
+  const articles = sentimentFilter === 'all'
+    ? allArticles
+    : allArticles.filter((a) => a.sentiment === sentimentFilter);
 
   if (articles.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">No news articles found</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          {sentimentFilter === 'all'
+            ? 'No news articles found.'
+            : `No ${sentimentFilter} articles found. Try a different filter.`}
+        </p>
       </div>
     );
   }
@@ -67,8 +66,6 @@ export function NewsFeed({ query, onTickerClick }: NewsFeedProps) {
       {articles.map((article, index) => (
         <NewsCard key={`${article.url}-${index}`} article={article} onTickerClick={onTickerClick} />
       ))}
-
-      {/* Infinite scroll trigger */}
       <div ref={observerTarget} className="h-10 flex items-center justify-center">
         {isFetchingNextPage && (
           <span className="text-gray-600 dark:text-gray-400">Loading more...</span>
