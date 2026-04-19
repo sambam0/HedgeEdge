@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { AppLayout } from '@/components/layout/app-layout';
 import { NewsFeed } from '@/components/news/news-feed';
 import { SentimentGauge } from '@/components/news/sentiment-gauge';
 
@@ -20,23 +21,18 @@ export default function NewsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
+    <AppLayout>
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Financial News</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Latest market news and analysis
-          </p>
+          <p className="text-gray-600 dark:text-gray-400">Latest market news and analysis</p>
         </div>
 
-        {/* Sentiment Gauge */}
         <SentimentGauge />
 
-        {/* Search */}
         <form onSubmit={handleSearch} className="bg-white dark:bg-neutral-900 rounded-lg p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
               value={inputValue}
@@ -47,9 +43,8 @@ export default function NewsPage() {
           </div>
         </form>
 
-        {/* News Feed */}
         <NewsFeed query={searchQuery} onTickerClick={handleTickerClick} />
       </div>
-    </div>
+    </AppLayout>
   );
 }
