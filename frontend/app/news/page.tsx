@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppLayout } from '@/components/layout/app-layout';
-import { NewsFeed, type SentimentFilter } from '@/components/news/news-feed';
+import { NewsFeed } from '@/components/news/news-feed';
 import { SentimentGauge } from '@/components/news/sentiment-gauge';
+
+type SentimentFilter = 'all' | 'positive' | 'neutral' | 'negative';
 
 const filterButtons: { value: SentimentFilter; label: string; activeClass: string }[] = [
   { value: 'all', label: 'All', activeClass: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' },
@@ -58,7 +60,6 @@ export default function NewsPage() {
           {filterButtons.map(({ value, label, activeClass }) => (
             <button
               key={value}
-              type="button"
               onClick={() => setSentimentFilter(value)}
               className={cn(
                 'px-3 py-1 rounded-full text-xs font-medium transition-colors capitalize',

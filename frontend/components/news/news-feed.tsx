@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useNewsSearch } from '@/lib/hooks/useNews';
 import { NewsCard } from './news-card';
 
-export type SentimentFilter = 'all' | 'positive' | 'neutral' | 'negative';
+type SentimentFilter = 'all' | 'positive' | 'neutral' | 'negative';
 
 interface NewsFeedProps {
   query: string;

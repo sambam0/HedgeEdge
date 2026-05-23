@@ -1,5 +1,13 @@
 # Principle - Personal Trading Terminal
 
+
+ Frontend:                                                                                                                      
+  cd frontend && npm run dev                                                                                                               
+                                                                                                                                           
+  Backend:                                                                                                                       
+  cd /Users/santoncich/HedgeEdge/backend 
+ python3 -m uvicorn app.main:app --reload
+
 A comprehensive web-based trading terminal that combines real-time market data, portfolio tracking, fundamental analysis tools, and macroeconomic indicators.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)

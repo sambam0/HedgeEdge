@@ -88,7 +88,6 @@ export function NewsCard({ article, onTickerClick }: NewsCardProps) {
               {article.tickers.map((ticker) => (
                 <button
                   key={ticker}
-                  type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();

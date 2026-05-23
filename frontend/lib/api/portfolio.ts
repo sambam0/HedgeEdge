@@ -81,3 +81,35 @@ export const portfolioAPI = {
   getPerformance: (portfolioId: number) =>
     apiClient<PortfolioPerformance>(API_ENDPOINTS.PORTFOLIO_PERFORMANCE(portfolioId)),
 };
+
+export interface AlpacaPosition {
+  ticker: string;
+  shares: number;
+  cost_basis: number;
+  current_price: number;
+  current_value: number;
+  gain_loss: number;
+  gain_loss_percent: number;
+  daily_change: number;
+  daily_change_percent: number;
+}
+
+export interface AlpacaSummary {
+  total_value: number;
+  total_cost: number;
+  total_gain_loss: number;
+  total_gain_loss_percent: number;
+  daily_change: number;
+  daily_change_percent: number;
+  positions_count: number;
+  account_mode: 'paper' | 'live';
+  positions: AlpacaPosition[];
+}
+
+export const alpacaAPI = {
+  getSummary: () =>
+    apiClient<AlpacaSummary>('/api/v1/portfolio/alpaca/summary'),
+
+  getPositions: () =>
+    apiClient<AlpacaPosition[]>('/api/v1/portfolio/alpaca/positions'),
+};

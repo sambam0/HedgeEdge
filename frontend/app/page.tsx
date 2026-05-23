@@ -6,15 +6,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { MetricCard } from '@/components/ui/metric-card';
 import { PriceChange } from '@/components/ui/price-change';
 import { MiniSparkline } from '@/components/charts/mini-sparkline';
-import { Wallet } from 'lucide-react';
+import { Wallet, AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-
-interface Position {
-  ticker: string;
-  current_value: number;
-  gain_loss: number;
-  gain_loss_percent: number;
-}
+import { alpacaAPI, AlpacaSummary } from '@/lib/api/portfolio';
 
 export default function Home() {
   const { data: indicesData } = useQuery({
@@ -25,15 +19,13 @@ export default function Home() {
     },
   });
 
-  const { data: portfolioData } = useQuery({
+  const { data: portfolioData, isError: alpacaError, isLoading: isLoadingPortfolio } = useQuery({
     queryKey: ['portfolio-performance'],
-    queryFn: async () => {
-      const res = await fetch('http://localhost:8000/api/v1/portfolio/1/performance');
-      return res.json();
-    },
+    queryFn: () => alpacaAPI.getSummary(),
+    retry: false, // Don't retry Alpaca 503s infinitely
   });
 
-  const topPositions: Position[] = portfolioData?.positions?.slice(0, 4) ?? [];
+  const topPositions = portfolioData?.positions?.slice(0, 4) ?? [];
 
   return (
     <AppLayout>
@@ -45,13 +37,37 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Portfolio Summary Context & Errors */}
+        {alpacaError && (
+          <Card className="border-red-200 bg-red-50 dark:bg-red-900/10 dark:border-red-900/50">
+            <CardContent className="p-4 flex items-center space-x-3">
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <div>
+                <p className="font-medium text-red-900 dark:text-red-200">Alpaca Integration Unavailable</p>
+                <p className="text-sm text-red-600 dark:text-red-400">Could not connect to Alpaca Markets API. Please check your credentials or network.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Portfolio Summary */}
         {portfolioData && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard label="Total Value" value={formatCurrency(portfolioData.total_value)} icon={Wallet} />
-            <MetricCard label="Total Gain/Loss" value={formatCurrency(portfolioData.total_gain_loss)} change={portfolioData.total_gain_loss_percent} />
-            <MetricCard label="Daily Change" value={formatCurrency(portfolioData.daily_change)} change={portfolioData.daily_change_percent} />
-            <MetricCard label="Positions" value={portfolioData.positions_count} />
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                portfolioData.account_mode === 'paper'
+                  ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400'
+                  : 'bg-green-500/20 text-green-600 dark:text-green-400'
+              }`}>
+                {portfolioData.account_mode === 'paper' ? 'Paper Trading' : 'Live Account'}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MetricCard label="Total Value" value={formatCurrency(portfolioData.total_value)} icon={Wallet} />
+              <MetricCard label="Total Gain/Loss" value={formatCurrency(portfolioData.total_gain_loss)} change={portfolioData.total_gain_loss_percent} />
+              <MetricCard label="Daily Change" value={formatCurrency(portfolioData.daily_change)} change={portfolioData.daily_change_percent} />
+              <MetricCard label="Positions" value={portfolioData.positions_count} />
+            </div>
           </div>
         )}
 
@@ -60,7 +76,7 @@ export default function Home() {
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Top Positions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {topPositions.map((pos) => (
+              {topPositions.map((pos: any) => (
                 <Card key={pos.ticker}>
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">
